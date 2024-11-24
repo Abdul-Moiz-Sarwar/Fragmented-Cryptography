@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Results - Audio{% endblock %}
+
+{% block content %}
+
+<div class="w-50 bg-white rounded shadow p-3">
+    <h1 class="text-primary">Audio Results</h1>
+
+    <div class="p-3 bg-dark d-flex flex-column gap-3 rounded">
+
+        <div class="form-control w-100">
+            <label class="pb-2">Original Audio</label>
+            <audio class="w-100" controls>
+                <source src="{{ original_audio }}" type="audio/mpeg">
+            </audio>
+        </div>
+
+        {% if encrypted_audio %}
+
+        <div class="form-control w-100">
+            <label class="pb-2">Encrypted Audio</label>
+            <audio class="w-100" controls>
+                <source src="{{ encrypted_audio }}" type="audio/mpeg">
+            </audio>
+        </div>
+
+        {% endif %}
+
+        <div class="form-control w-100">
+            <label class="pb-2">Segmented Audio</label>
+            <audio id="audioPlayer" class="w-100" controls>
+                <source id="audioSource" src="{{ segments.0 }}" type="audio/mpeg">
+            </audio>
+
+            <div class="form-floating w-100 mt-2">
+                <select id="segmentSelector" class="form-control">
+                    {% for segment in segments %}
+                    <option value="{{ segment }}">Segment {{ forloop.counter }}</option>
+                    {% endfor %}
+                </select>
+                <label for="segmentSelector" class="text-dark">Select Segment</label>
+            </div>
+        </div>
+
+
+        <div class="form-control w-100">
+            <label class="pb-2">Reconstructed Audio</label>
+            <audio class="w-100" controls>
+                <source src="{{ reconstructed_audio }}" type="audio/mpeg">
+            </audio>
+        </div>
+
+        {% if decrypted_audio %}
+
+        <div class="form-control w-100">
+            <label class="pb-2">Decrypted Audio</label>
+            <audio class="w-100" controls>
+                <source src="{{ decrypted_audio }}" type="audio/mpeg">
+            </audio>
+        </div>
+
+        {% endif %}
+
+        <a href="/" class="btn btn-primary w-100">Send Again</a>
+    </div>
+</div>
+
+
+<script>
+    document.getElementById('segmentSelector').addEventListener('change', function () {
+        const audioSource = document.getElementById('audioSource');
+        const audioPlayer = document.getElementById('audioPlayer');
+        audioSource.src = this.value;
+        audioPlayer.load();
+        audioPlayer.play();
+    });
+</script>
+
+{% endblock %}
