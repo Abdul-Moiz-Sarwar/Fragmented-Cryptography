@@ -36,7 +36,7 @@ This project was developed as a group effort. The contributors are:
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/your-username/your-repository.git
+   git clone https://github.com/Abdul-Moiz-Sarwar/Fragmented-Cryptography
    cd your-repository
    ```
 
