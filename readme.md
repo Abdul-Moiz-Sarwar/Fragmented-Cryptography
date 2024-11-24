@@ -13,7 +13,7 @@ This project was developed as a group effort. The contributors are:
 
 - **Abdul Moiz Sarwar** ([View Profile](https://github.com/Abdul-Moiz-Sarwar))
 - **Iqra Bokhari** ([View Profile](https://github.com/iqrabokhari))
-- **Numair Cheema** ([View Profile](https://github.com/collaborator2))
+- **Numair Cheema** ([View Profile](https://github.com/numair212))
 
 ---
 
