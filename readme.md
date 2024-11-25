@@ -54,7 +54,7 @@ This project was developed as a group effort. The contributors are:
 
 4. Define environment variables in a `.env` file at the root of the project:
    ```env
-   BASE_URL="http://127.0.0.1:8000"
+   MEDIA_BASE_URL="http://127.0.0.1:8000/media/"
    SECRET_KEY="any secret key for django"
    DEBUG="True"
    ALLOWED_HOSTS="*"

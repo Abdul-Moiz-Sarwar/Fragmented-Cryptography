@@ -2,9 +2,6 @@ import os
 import random
 
 def split_ascii_value(ascii_value, splits):
-    if splits not in [2, 4, 8]:
-        raise ValueError("Splits must be 2, 4, or 8.")
-    
     buckets = [ascii_value // splits] * splits
     remaining = ascii_value % splits
 

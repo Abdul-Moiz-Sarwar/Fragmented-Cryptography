@@ -3,6 +3,45 @@ import numpy as np
 import os, io
 from pydub import AudioSegment
 
+def logistic_map(size, seed):
+    chaotic_seq = np.zeros(size, dtype=np.float64)
+    x = seed
+    r = 4
+    for i in range(size):
+        x = r * x * (1 - x)
+        chaotic_seq[i] = x
+    chaotic_seq = chaotic_seq - np.floor(chaotic_seq)
+    return (chaotic_seq * 65535 - 32768).astype(np.int16)
+
+def encrypt(audio_input, seed, audio_output):
+    audio = AudioSegment.from_file(audio_input)
+    samples = np.array(audio.get_array_of_samples(), dtype=np.int16)
+
+    chaotic_key = logistic_map(samples.size, seed)
+
+    encrypted_samples = np.bitwise_xor(samples, chaotic_key)
+
+    permutation_seq = logistic_map(samples.size, seed + 0.1).argsort()
+    encrypted_samples = encrypted_samples[permutation_seq]
+
+    encrypted_audio = audio._spawn(encrypted_samples.tobytes())
+    encrypted_audio.export(f"media/{audio_output}", format="mp3")
+
+def decrypt(audio_input, seed, audio_output):
+    audio = AudioSegment.from_file(audio_input)
+    encrypted_samples = np.array(audio.get_array_of_samples(), dtype=np.int16)
+
+    permutation_seq = logistic_map(encrypted_samples.size, seed + 0.1).argsort()
+    reverse_permutation = np.argsort(permutation_seq)
+    unpermuted_samples = encrypted_samples[reverse_permutation]
+
+    chaotic_key = logistic_map(unpermuted_samples.size, seed)
+
+    decrypted_samples = np.bitwise_xor(unpermuted_samples, chaotic_key)
+
+    decrypted_audio = audio._spawn(decrypted_samples.tobytes())
+    decrypted_audio.export(f"media/{audio_output}", format="mp3")
+
 def split(audio_input, parts, splits_dir):
     wav = AudioSegment.from_mp3(audio_input)
 

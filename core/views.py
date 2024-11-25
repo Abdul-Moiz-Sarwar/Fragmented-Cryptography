@@ -1,21 +1,8 @@
 from django.shortcuts import render
-import os
 from . import audio
 from . import image
 from . import text
-from .settings import MEDIA_ROOT, MEDIA_URL, BASE_URL
-
-def encrypt_image(file):
-    return file
-
-def decrypt_image(file):
-    return file
-
-def encrypt_audio(file):
-    return file
-
-def decrypt_audio(file):
-    return file
+from .settings import MEDIA_ROOT, MEDIA_BASE_URL
 
 def encrypt_text(file):
     return file
@@ -32,90 +19,126 @@ def upload_file(request):
 
         if file_type == 'image':
             response = {}
-            original_image_path = os.path.join(MEDIA_ROOT, f'_original_{plain_file.name}')
+
+            file_state = f"original_{plain_file.name}"
+
+            original_image_path = f"{MEDIA_ROOT}\{file_state}"
+            response[f"original_image"] = f"{MEDIA_BASE_URL}{file_state}"
+
             with open(original_image_path, 'wb') as f:
                 f.write(plain_file.read())
 
-            response["original_image"] = f"{BASE_URL}{MEDIA_URL}_original_{plain_file.name}"
-
             if encrypt:
-                image_path = encrypt_image(original_image_path)
-                response["encrypted_image"] = f"{BASE_URL}{MEDIA_URL}_original_{plain_file.name}"
+                file_state = f"encrypted_{plain_file.name}"
+
+                image_path = f"{MEDIA_ROOT}\{file_state}"
+                response["encrypted_image"] = f"{MEDIA_BASE_URL}{file_state}"
+
+                image.encrypt(original_image_path, 0.5, file_state)
             else:
                 image_path = original_image_path
 
             segments = image.split(image_path, splits, f"{MEDIA_ROOT}\image_splits")
-            response["segments"] = [f"{BASE_URL}{MEDIA_URL}image_splits\{segment}" for segment in segments]
+            response["segments"] = [f"{MEDIA_BASE_URL}image_splits\{segment}" for segment in segments]
             print(response["segments"])
 
+            file_state = f"reconstructed_{plain_file.name}"
 
-            reconstructed_image = image.rejoin(f"{MEDIA_ROOT}\image_splits", len(segments), f"_reconstructed_{plain_file.name}")
-            response["reconstructed_image"] = f"{BASE_URL}{MEDIA_URL}{reconstructed_image}"
+            reconstructed_image_path = f"{MEDIA_ROOT}\{file_state}"
+            response["reconstructed_image"] = f"{MEDIA_BASE_URL}{file_state}"
+
+            image.rejoin(f"{MEDIA_ROOT}\image_splits", len(segments), file_state)
             print(response["reconstructed_image"])
 
             if encrypt:
-                final_image_path = decrypt_image(reconstructed_image)
-                response["decrypted_image"] = f"{BASE_URL}{MEDIA_URL}{final_image_path}"          
+                file_state = f"decrypted_{plain_file.name}"
+                response["decrypted_image"] = f"{MEDIA_BASE_URL}{file_state}"     
+                image.decrypt(reconstructed_image_path, 0.5, file_state)
 
             return render(request, 'image.html', response)
         
 
         elif file_type == 'audio':
             response = {}
-            original_audio_path = os.path.join(MEDIA_ROOT, f"_original_{plain_file.name}")
+
+            file_state = f"original_{plain_file.name}"
+
+            original_audio_path = f"{MEDIA_ROOT}\{file_state}"
+            response["original_audio"] = f"{MEDIA_BASE_URL}{file_state}"
+
             with open(original_audio_path, 'wb') as f:
                 f.write(plain_file.read())
-                
-            response["original_audio"] = f"{BASE_URL}{MEDIA_URL}_original_{plain_file.name}"
-            print(response["original_audio"])
 
             if encrypt:
-                audio_path = encrypt_audio(original_audio_path)
-                response["encrypted_audio"] = f"{BASE_URL}{MEDIA_URL}_original_{plain_file.name}"
+                file_state = f"encrypted_{plain_file.name}"
+
+                audio_path = f"{MEDIA_ROOT}\{file_state}"
+                response["encrypted_audio"] = f"{MEDIA_BASE_URL}{file_state}"
+
+                audio.encrypt(original_audio_path, 0.5, file_state)
             else:
                 audio_path = original_audio_path
 
             segments = audio.split(audio_path, splits, f"{MEDIA_ROOT}\\audio_splits")
-            response["segments"] = [f"{BASE_URL}{MEDIA_URL}audio_splits\{segment}" for segment in segments]
+            response["segments"] = [f"{MEDIA_BASE_URL}audio_splits\{segment}" for segment in segments]
             print(response["segments"])
 
-            reconstructed_audio = audio.rejoin(f"{MEDIA_ROOT}\\audio_splits", len(segments), f"_reconstructed_{plain_file.name}")
-            response["reconstructed_audio"] = f"{BASE_URL}{MEDIA_URL}{reconstructed_audio}"
+            file_state = f"reconstructed_{plain_file.name}"
+
+            response["reconstructed_audio"] = f"{MEDIA_BASE_URL}{file_state}"
+            reconstructed_audio_path = f"{MEDIA_ROOT}\{file_state}"
+
+            audio.rejoin(f"{MEDIA_ROOT}\\audio_splits", len(segments), file_state)
             print(response["reconstructed_audio"])
 
             if encrypt:
-                final_audio_path = decrypt_audio(reconstructed_audio)
-                response["decrypted_audio"] = f"{BASE_URL}{MEDIA_URL}{final_audio_path}"
+                file_state = f"decrypted_{plain_file.name}"
+                response["decrypted_audio"] = f"{MEDIA_BASE_URL}{file_state}"
+                audio.decrypt(reconstructed_audio_path, 0.5, file_state)
+
 
             return render(request, 'audio.html', response)
         
 
         elif file_type == 'text':
             response = {}
-            original_text_path = os.path.join(MEDIA_ROOT, f'_original_{plain_file.name}')
+
+            file_state = f"original_{plain_file.name}"
+
+            original_text_path = f"{MEDIA_ROOT}\{file_state}"
+            response["original_text"] = f"{MEDIA_BASE_URL}{file_state}"
+
             with open(original_text_path, 'wb') as f:
                 f.write(plain_file.read())
             
-            response["original_text"] = f"{BASE_URL}{MEDIA_URL}_original_{plain_file.name}"
             print(response["original_text"])
 
             if encrypt:
-                text_path = encrypt_text(original_text_path)
-                response["encrypted_text"] = f"{BASE_URL}{MEDIA_URL}_original_{plain_file.name}"
+                file_state = f"encrypted_{plain_file.name}"
+
+                text_path = f"{MEDIA_ROOT}\{file_state}"
+                response["encrypted_text"] = f"{MEDIA_BASE_URL}{file_state}"
+
+                encrypt_text(original_text_path)
             else:
                 text_path = original_text_path
 
             segments = text.split(text_path, splits, f"{MEDIA_ROOT}\\text_splits")
-            response["segments"] = [f"{BASE_URL}{MEDIA_URL}text_splits/{segment}" for segment in segments]
+            response["segments"] = [f"{MEDIA_BASE_URL}text_splits\{segment}" for segment in segments]
             print(response["segments"])
+            
+            file_state = f"reconstructed_{plain_file.name}"
 
-            reconstructed_text = text.rejoin(f"{MEDIA_ROOT}\\text_splits", len(segments), f"_reconstructed_{plain_file.name}")
-            response["reconstructed_text"] = f"{BASE_URL}{MEDIA_URL}{reconstructed_text}"
+            reconstructed_text_path = f"{MEDIA_ROOT}\{file_state}"
+            response["reconstructed_text"] = f"{MEDIA_BASE_URL}{file_state}"
+
+            text.rejoin(f"{MEDIA_ROOT}\\text_splits", len(segments), f"_reconstructed_{plain_file.name}")
             print(response["reconstructed_text"])
 
             if encrypt:
-                final_text_path = decrypt_text(reconstructed_text)
-                response["decrypted_text"] = f"{BASE_URL}{MEDIA_URL}{final_text_path}"
+                file_state = f"decrypted_{plain_file.name}"
+                response["decrypted_text"] = f"{MEDIA_BASE_URL}{file_state}"
+                decrypt_text(reconstructed_text_path)
 
             return render(request, 'text.html', response)
 

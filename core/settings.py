@@ -12,7 +12,7 @@ SECRET_KEY = getenv("SECRET_KEY")
 
 ALLOWED_HOSTS = [getenv("ALLOWED_HOSTS")]
 
-BASE_URL = getenv("BASE_URL")
+MEDIA_BASE_URL = getenv("MEDIA_BASE_URL")
 
 STATIC_URL = 'static/'
 
