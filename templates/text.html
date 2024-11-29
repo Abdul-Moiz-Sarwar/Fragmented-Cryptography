@@ -42,7 +42,7 @@
 
         <div class="form-control w-100">
             <label class="pb-2">Reconstructed Text</label>
-            <p id="reconstructed_text"></p>
+            <p id="reconstructed_text">{{segments.0}}</p>
         </div>
 
         {% if encrypted_text %}
@@ -63,7 +63,7 @@
     async function fetchAndDisplayFiles() {
         try {
             const response = await fetch("{{original_text}}");
-            if (!response.ok) throw new Error("File not found");
+            if (!response.ok) throw new Error("Original file not found");
             const content = await response.text();
             document.getElementById('original_text').textContent = content;
 
@@ -75,7 +75,7 @@
         if ("{{encrypted_text}}"){
             try {
                 const response = await fetch("{{encrypted_text}}");
-                if (!response.ok) throw new Error("File not found");
+                if (!response.ok) throw new Error("Encrypted file not found");
                 const content = await response.text();
                 document.getElementById('encrypted_text').textContent = content;
 
@@ -86,20 +86,22 @@
         }
 
         try {
-            const response = await fetch("{{segments.0}}");
-            if (!response.ok) throw new Error("File not found");
+            console.log("{{segments.0}}")
+            console.log("{{segments}}")
+            const response = await fetch("{{segments.0|escapejs}}");
+            if (!response.ok) throw new Error("Segment 0 file not found");
             const content = await response.text();
             document.getElementById('textSource').textContent = content;
 
         } catch (error) {
             console.error(`Error loading file segments:`, error);
-            document.getElementById('segments').textContent = "Error loading file";
+            document.getElementById('textSource').textContent = "Error loading file";
         }
 
         if ("{{decrypted_text}}"){
             try {
                 const response = await fetch("{{decrypted_text}}");
-                if (!response.ok) throw new Error("File not found");
+                if (!response.ok) throw new Error("Decrypted file not found");
                 const content = await response.text();
                 document.getElementById('decrypted_text').textContent = content;
 
@@ -111,7 +113,7 @@
     
         try {
             const response = await fetch("{{reconstructed_text}}");
-            if (!response.ok) throw new Error("File not found");
+            if (!response.ok) throw new Error("Reconstructed file not found");
             const content = await response.text();
             document.getElementById('reconstructed_text').textContent = content;
 

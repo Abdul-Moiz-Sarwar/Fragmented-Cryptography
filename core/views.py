@@ -119,7 +119,7 @@ def upload_file(request):
                 text_path = f"{MEDIA_ROOT}\{file_state}"
                 response["encrypted_text"] = f"{MEDIA_BASE_URL}{file_state}"
 
-                encrypt_text(original_text_path)
+                text.encrypt(original_text_path, 0.5, file_state)
             else:
                 text_path = original_text_path
 
@@ -132,13 +132,14 @@ def upload_file(request):
             reconstructed_text_path = f"{MEDIA_ROOT}\{file_state}"
             response["reconstructed_text"] = f"{MEDIA_BASE_URL}{file_state}"
 
-            text.rejoin(f"{MEDIA_ROOT}\\text_splits", len(segments), f"_reconstructed_{plain_file.name}")
+            text.rejoin(f"{MEDIA_ROOT}\\text_splits", len(segments), f"reconstructed_{plain_file.name}")
             print(response["reconstructed_text"])
 
             if encrypt:
                 file_state = f"decrypted_{plain_file.name}"
                 response["decrypted_text"] = f"{MEDIA_BASE_URL}{file_state}"
-                decrypt_text(reconstructed_text_path)
+                text.decrypt(reconstructed_text_path, 0.5, file_state)
+
 
             return render(request, 'text.html', response)
 

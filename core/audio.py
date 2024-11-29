@@ -1,45 +1,49 @@
 import wave
 import numpy as np
 import os, io
+import random
 from pydub import AudioSegment
+from Crypto.Cipher import ChaCha20
+from Crypto.Random import get_random_bytes
 
-def logistic_map(size, seed):
-    chaotic_seq = np.zeros(size, dtype=np.float64)
-    x = seed
-    r = 4
-    for i in range(size):
-        x = r * x * (1 - x)
-        chaotic_seq[i] = x
-    chaotic_seq = chaotic_seq - np.floor(chaotic_seq)
-    return (chaotic_seq * 65535 - 32768).astype(np.int16)
+def generate_key(seed: int, length: int = 32):
+    random.seed(seed)
+    key = bytearray(random.getrandbits(8) for _ in range(length))
+    return key
 
 def encrypt(audio_input, seed, audio_output):
+    key = generate_key(seed)
     audio = AudioSegment.from_file(audio_input)
-    samples = np.array(audio.get_array_of_samples(), dtype=np.int16)
+    
+    raw_data = audio.raw_data
 
-    chaotic_key = logistic_map(samples.size, seed)
-
-    encrypted_samples = np.bitwise_xor(samples, chaotic_key)
-
-    permutation_seq = logistic_map(samples.size, seed + 0.1).argsort()
-    encrypted_samples = encrypted_samples[permutation_seq]
-
-    encrypted_audio = audio._spawn(encrypted_samples.tobytes())
+    nonce = get_random_bytes(8)
+    cipher = ChaCha20.new(key=key, nonce=nonce)
+    
+    encrypted_data = cipher.encrypt(raw_data)
+    encrypted_audio_data = nonce + encrypted_data
+    encrypted_audio = AudioSegment.from_file(io.BytesIO(encrypted_audio_data), format="raw", 
+                                             sample_width=audio.sample_width, 
+                                             frame_rate=audio.frame_rate, 
+                                             channels=audio.channels)
+    
     encrypted_audio.export(f"media/{audio_output}", format="mp3")
 
 def decrypt(audio_input, seed, audio_output):
+    key = generate_key(seed)
     audio = AudioSegment.from_file(audio_input)
-    encrypted_samples = np.array(audio.get_array_of_samples(), dtype=np.int16)
-
-    permutation_seq = logistic_map(encrypted_samples.size, seed + 0.1).argsort()
-    reverse_permutation = np.argsort(permutation_seq)
-    unpermuted_samples = encrypted_samples[reverse_permutation]
-
-    chaotic_key = logistic_map(unpermuted_samples.size, seed)
-
-    decrypted_samples = np.bitwise_xor(unpermuted_samples, chaotic_key)
-
-    decrypted_audio = audio._spawn(decrypted_samples.tobytes())
+    
+    encrypted_data = audio.raw_data
+    nonce = encrypted_data[:8]
+    encrypted_data = encrypted_data[8:]
+    cipher = ChaCha20.new(key=key, nonce=nonce)
+    decrypted_data = cipher.decrypt(encrypted_data)
+    
+    decrypted_audio = AudioSegment.from_file(io.BytesIO(decrypted_data), format="raw", 
+                                             sample_width=audio.sample_width, 
+                                             frame_rate=audio.frame_rate, 
+                                             channels=audio.channels)
+    
     decrypted_audio.export(f"media/{audio_output}", format="mp3")
 
 def split(audio_input, parts, splits_dir):
