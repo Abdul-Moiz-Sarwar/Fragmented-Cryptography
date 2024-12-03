@@ -39,12 +39,10 @@ def decrypt(audio_input, seed, audio_output):
     cipher = ChaCha20.new(key=key, nonce=nonce)
     decrypted_data = cipher.decrypt(encrypted_data)
     
-    decrypted_audio = AudioSegment.from_file(io.BytesIO(decrypted_data), format="raw", 
-                                             sample_width=audio.sample_width, 
-                                             frame_rate=audio.frame_rate, 
-                                             channels=audio.channels)
+    AudioSegment.from_file(io.BytesIO(decrypted_data), format="raw", sample_width=audio.sample_width, 
+                           frame_rate=audio.frame_rate, channels=audio.channels)
+    return audio_output
     
-    decrypted_audio.export(f"media/{audio_output}", format="mp3")
 
 def split(audio_input, parts, splits_dir):
     wav = AudioSegment.from_mp3(audio_input)

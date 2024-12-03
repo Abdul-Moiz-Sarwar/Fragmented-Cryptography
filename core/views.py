@@ -64,7 +64,6 @@ def upload_file(request):
             file_state = f"original_{plain_file.name}"
 
             original_audio_path = f"{MEDIA_ROOT}\{file_state}"
-            response["original_audio"] = f"{MEDIA_BASE_URL}{file_state}"
 
             with open(original_audio_path, 'wb') as f:
                 f.write(plain_file.read())
@@ -95,6 +94,11 @@ def upload_file(request):
                 file_state = f"decrypted_{plain_file.name}"
                 response["decrypted_audio"] = f"{MEDIA_BASE_URL}{file_state}"
                 audio.decrypt(reconstructed_audio_path, 0.5, file_state)
+
+                decrypted_audio_path = f"{MEDIA_ROOT}\{file_state}"
+                with open(decrypted_audio_path, 'wb') as f:
+                    plain_file.seek(0)
+                    f.write(plain_file.read())
 
 
             return render(request, 'audio.html', response)
