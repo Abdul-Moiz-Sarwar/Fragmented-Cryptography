@@ -1,6 +1,5 @@
-import wave
 import numpy as np
-import os, io
+import os, io, wave
 from pydub import AudioSegment
 
 def logistic_map(size, seed):
@@ -11,7 +10,7 @@ def logistic_map(size, seed):
         x = r * x * (1 - x)
         chaotic_seq[i] = x
     chaotic_seq = chaotic_seq - np.floor(chaotic_seq)
-    return (chaotic_seq * 65535 - 32768).astype(np.int16)
+    return ((chaotic_seq * 65535 - 32768)).astype(np.int16)
 
 def encrypt(audio_input, seed, audio_output):
     audio = AudioSegment.from_file(audio_input)

@@ -1,14 +1,6 @@
-from django.shortcuts import render
-from . import audio
-from . import image
-from . import text
 from .settings import MEDIA_ROOT, MEDIA_BASE_URL
-
-def encrypt_text(file):
-    return file
-
-def decrypt_text(file):
-    return file
+from django.shortcuts import render
+from . import audio, image, text
 
 def upload_file(request):
     if request.method == 'POST':
@@ -47,7 +39,6 @@ def upload_file(request):
             response["reconstructed_image"] = f"{MEDIA_BASE_URL}{file_state}"
 
             image.rejoin(f"{MEDIA_ROOT}\image_splits", len(segments), file_state)
-            print(response["reconstructed_image"])
 
             if encrypt:
                 file_state = f"decrypted_{plain_file.name}"
@@ -56,7 +47,6 @@ def upload_file(request):
 
             return render(request, 'image.html', response)
         
-
         elif file_type == 'audio':
             response = {}
 
@@ -80,7 +70,6 @@ def upload_file(request):
 
             segments = audio.split(audio_path, splits, f"{MEDIA_ROOT}\\audio_splits")
             response["segments"] = [f"{MEDIA_BASE_URL}audio_splits\{segment}" for segment in segments]
-            print(response["segments"])
 
             file_state = f"reconstructed_{plain_file.name}"
 
@@ -88,8 +77,7 @@ def upload_file(request):
             reconstructed_audio_path = f"{MEDIA_ROOT}\{file_state}"
 
             audio.rejoin(f"{MEDIA_ROOT}\\audio_splits", len(segments), file_state)
-            print(response["reconstructed_audio"])
-
+            
             if encrypt:
                 file_state = f"decrypted_{plain_file.name}"
                 response["decrypted_audio"] = f"{MEDIA_BASE_URL}{file_state}"
@@ -100,10 +88,8 @@ def upload_file(request):
                     plain_file.seek(0)
                     f.write(plain_file.read())
 
-
             return render(request, 'audio.html', response)
         
-
         elif file_type == 'text':
             response = {}
 
@@ -115,8 +101,6 @@ def upload_file(request):
             with open(original_text_path, 'wb') as f:
                 f.write(plain_file.read())
             
-            print(response["original_text"])
-
             if encrypt:
                 file_state = f"encrypted_{plain_file.name}"
 
@@ -129,7 +113,6 @@ def upload_file(request):
 
             segments = text.split(text_path, splits, f"{MEDIA_ROOT}\\text_splits")
             response["segments"] = [f"{MEDIA_BASE_URL}text_splits\{segment}" for segment in segments]
-            print(response["segments"])
             
             file_state = f"reconstructed_{plain_file.name}"
 
@@ -137,15 +120,12 @@ def upload_file(request):
             response["reconstructed_text"] = f"{MEDIA_BASE_URL}{file_state}"
 
             text.rejoin(f"{MEDIA_ROOT}\\text_splits", len(segments), f"reconstructed_{plain_file.name}")
-            print(response["reconstructed_text"])
 
             if encrypt:
                 file_state = f"decrypted_{plain_file.name}"
                 response["decrypted_text"] = f"{MEDIA_BASE_URL}{file_state}"
                 text.decrypt(reconstructed_text_path, 0.5, file_state)
 
-
             return render(request, 'text.html', response)
-
 
     return render(request, 'form.html')

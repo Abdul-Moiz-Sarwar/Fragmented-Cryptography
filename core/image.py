@@ -1,7 +1,6 @@
 import numpy as np
 from PIL import Image
 import os
-import numpy as np
 
 def logistic_map(size, seed):
     chaotic_seq = np.zeros(size, dtype=np.float64)
