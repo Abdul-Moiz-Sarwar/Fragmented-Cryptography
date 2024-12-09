@@ -40,7 +40,6 @@ def upload_file(request):
 
             segments = image.split(image_path, splits, f"{MEDIA_ROOT}\image_splits")
             response["segments"] = [f"{MEDIA_BASE_URL}image_splits\{segment}" for segment in segments]
-            print(response["segments"])
 
             file_state = f"reconstructed_{plain_file.name}"
 
@@ -64,6 +63,7 @@ def upload_file(request):
             file_state = f"original_{plain_file.name}"
 
             original_audio_path = f"{MEDIA_ROOT}\{file_state}"
+            response["original_audio"] = f"{MEDIA_BASE_URL}{file_state}"
 
             with open(original_audio_path, 'wb') as f:
                 f.write(plain_file.read())
